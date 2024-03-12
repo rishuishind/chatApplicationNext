@@ -1,6 +1,8 @@
+import FriendRequestSideBarOptions from "@/components/FriendRequestSideBarOptions"
 import { Icon, Icons } from "@/components/Icons"
 import SignOutButton from "@/components/SignOutButton"
 import { authOptions } from "@/lib/auth"
+import { fetchRedis } from "@/lib/helpers/redis"
 import { getServerSession } from "next-auth"
 import Image from "next/image"
 import Link from "next/link"
@@ -30,6 +32,8 @@ const sidebarOptions:SidebarOption[]=[
 const Layout = async ({children}:LayoutProps) => {
     const session = await getServerSession(authOptions);
     if(!session) notFound();
+
+    const unseenRequestCount = (await fetchRedis('smembers',`user:${session.user.id}:incoming_friend_request`) as User[]).length;
   return (
     <div className="w-full flex h-screen">
         <div className="flex h-full w-full max-w-xs grow flex-col gap-y-5 overflow-y-auto border-r border-x-gray-200 bg-white px-6">
@@ -40,6 +44,8 @@ const Layout = async ({children}:LayoutProps) => {
             <nav className="flex flex-1 flex-col">
               <ul role='list' className="flex flex-1 flex-col gap-y-7">
                 <li>List</li>
+
+
                 <li>
                  <div className="text-xs font-semibold leading-6 text-gray-400">Overview</div> 
                  <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -58,6 +64,12 @@ const Layout = async ({children}:LayoutProps) => {
                   })}
                  </ul>
                 </li>
+
+                <li>
+                  <FriendRequestSideBarOptions sessionId={session.user.id} initialUnseenRequestCount={unseenRequestCount}/>
+                </li>
+
+
                 <li className="-mx-6 mt-auto flex">
                   <div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
                     <div className="relative h-8 w-8 bg-gray-50">
@@ -71,6 +83,8 @@ const Layout = async ({children}:LayoutProps) => {
                   </div>
                   <SignOutButton className='h-full aspect-square'/>
                 </li>
+
+
               </ul>
             </nav>
         </div>
