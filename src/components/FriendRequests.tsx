@@ -1,9 +1,11 @@
 'use client'
 
+import { pusherClient } from "@/lib/pusher"
+import { toPusherKey } from "@/lib/utils"
 import axios from "axios"
 import { Check, UserPlus, X } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 
 interface FriendRequestsProps{
@@ -15,6 +17,18 @@ const FriendRequests:FC<FriendRequestsProps> = ({incomingFriendRequest,sessionId
 
     const router = useRouter();
     const [friendRequest,setFriendRequest] = useState<IncomingFriendRequest[]>(incomingFriendRequest)
+
+    useEffect(()=>{
+        pusherClient.subscribe(toPusherKey(`user:${sessionId}:incoming_friend_request`));
+        const friendRequestHandler=({senderId,senderEmail}:IncomingFriendRequest)=>{
+            setFriendRequest((prev)=>[...prev,{senderId,senderEmail}])
+        }
+        pusherClient.bind('incoming_friend_request',friendRequestHandler);
+        return ()=>{
+            pusherClient.unsubscribe(toPusherKey(`user:${sessionId}:incoming_friend_request`));
+            pusherClient.unbind('incoming_friend_request',friendRequestHandler);
+        }
+    },[])
 
     const acceptFriend = async(senderId:string)=>{
         await axios.post('/api/friends/accept',{id:senderId});
