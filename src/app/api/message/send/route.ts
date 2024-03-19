@@ -1,6 +1,8 @@
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { fetchRedis } from "@/lib/helpers/redis";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import { Message, messageSchema } from "@/lib/validations/messages";
 import { nanoid } from "nanoid";
 import { getServerSession } from "next-auth";
@@ -31,6 +33,13 @@ export async function POST(req:Request){
             timestamp
         }
         const message = messageSchema.parse(messageData);
+
+        pusherServer.trigger(toPusherKey(`chat:${chatId}`),'incoming-message',JSON.stringify(message));
+        pusherServer.trigger(toPusherKey(`user:${friendId}:chats`),'new_message',{
+            ...message,
+            senderImg:sender.image,
+            senderName:sender.name
+        })
 
         await db.zadd(`chat:${chatId}:messages`,{
             score:timestamp,
