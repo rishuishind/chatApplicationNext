@@ -6,7 +6,6 @@ import axios from "axios"
 import { Check, UserPlus, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { FC, useEffect, useState } from "react"
-import toast from "react-hot-toast"
 
 interface FriendRequestsProps{
     incomingFriendRequest:IncomingFriendRequest[],
@@ -20,8 +19,8 @@ const FriendRequests:FC<FriendRequestsProps> = ({incomingFriendRequest,sessionId
 
     useEffect(()=>{
         pusherClient.subscribe(toPusherKey(`user:${sessionId}:incoming_friend_request`));
-        const friendRequestHandler=({senderId,senderEmail}:IncomingFriendRequest)=>{
-            setFriendRequest((prev)=>[...prev,{senderId,senderEmail}])
+        const friendRequestHandler=({senderId,senderEmail,senderName}:IncomingFriendRequest)=>{
+            setFriendRequest((prev)=>[...prev,{senderId,senderEmail,senderName}])
         }
         pusherClient.bind('incoming_friend_request',friendRequestHandler);
         return ()=>{

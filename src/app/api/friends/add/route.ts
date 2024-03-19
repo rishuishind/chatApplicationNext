@@ -46,6 +46,7 @@ export async function POST(req:Request){
     pusherServer.trigger(toPusherKey(`user:${idToAdd}:incoming_friend_request`),'incoming_friend_request',{
         senderId:session.user.id,
         senderEmail:session.user.email,
+        senderName:session.user.name,
     })
     db.sadd(`user:${idToAdd}:incoming_friend_request`,session.user.id);
     return new Response('OK');
