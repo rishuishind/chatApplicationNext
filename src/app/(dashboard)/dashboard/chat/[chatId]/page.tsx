@@ -41,7 +41,6 @@ const page = async({params}:PageProps) => {
     const chatPartnerRaw = (await fetchRedis('get',`user:${chatPartnerId}`)) as string;
     const chatPartner = JSON.parse(chatPartnerRaw) as User;
     const initialMessage = await getChatMessages(chatId);
-    console.log(' first msg ',initialMessage);
   return (
     <div className="flex flex-1 flex-col justify-between h-full max-h-[calc(100vh-6rem)]">
         <div className=" flex sm:items-center justify-between py-3 border-b-2 border-gray-200">

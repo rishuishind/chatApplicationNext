@@ -32,12 +32,22 @@ export async function POST(req:Request){
         }
 
         //Subscribing the user for refreshing when freind is added
-        pusherServer.trigger(toPusherKey(`user:${idToAdd}:friends`),'new_friend',{response:'OK'});
+        const [userRaw,friendRaw] = await Promise.all([
+            await fetchRedis('get',`user:${session.user.id}`),
+            await fetchRedis('get',`user:${idToAdd}`)
+        ]) as [string,string];
 
-        await db.sadd(`user:${session.user.id}:friends`,idToAdd);
-        await db.sadd(`user:${idToAdd}:friends`,session.user.id);
+        const user = JSON.parse(userRaw) as User;
+        const friend = JSON.parse(friendRaw) as User;
 
-        await db.srem(`user:${session.user.id}:incoming_friend_request`,idToAdd);
+        await Promise.all([
+            pusherServer.trigger(toPusherKey(`user:${idToAdd}:friends`),'new_friend',user),
+            pusherServer.trigger(toPusherKey(`user:${session.user.id}:friends`),'new_friend',friend),
+            db.sadd(`user:${session.user.id}:friends`,idToAdd),
+            db.sadd(`user:${idToAdd}:friends`,session.user.id),
+            db.srem(`user:${session.user.id}:incoming_friend_request`,idToAdd),
+        ])
+
         return new Response('Accepted',{status:200});
 
     } catch (error) {
