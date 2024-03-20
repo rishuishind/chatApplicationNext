@@ -19,6 +19,7 @@ const Messages:FC<MessagesProp> = ({initialMessage,sessionId,chatPartner,session
     useEffect(()=>{
       pusherClient.subscribe(toPusherKey(`chat:${chatId}`));
       const messageHandler=(message:Message)=>{
+        console.log('Websocket are working here');
         setMessages(prev=>[message,...prev])
       }
       pusherClient.bind('incoming-message',messageHandler);
@@ -27,6 +28,7 @@ const Messages:FC<MessagesProp> = ({initialMessage,sessionId,chatPartner,session
             pusherClient.unbind('incoming-message',messageHandler);
         }
     },[chatId])
+    console.log('is console working?');
   return (
     <div id="messages" className="flex flex-1 h-full flex-col-reverse gap-4 p-3 overflow-y-auto scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch">
         <div ref={scrollDownRef}/>
